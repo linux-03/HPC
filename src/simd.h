@@ -240,15 +240,15 @@ namespace ASC_HPC
 
 
   template <typename T, size_t S>
-  auto operator>= (SIMD<T,S> a, SIMD<T,S> b)
+  inline auto operator>= (SIMD<T,S> a, SIMD<T,S> b)
   { return SIMD<mask64,S>(a.Lo()>=b.Lo(), a.Hi()>=b.Hi()); }
 
   template <typename T>
-  auto operator>= (SIMD<T,1> a, SIMD<T,1> b)
+  inline auto operator>= (SIMD<T,1> a, SIMD<T,1> b)
   { return SIMD<mask64,1>(a.Val()>=b.Val()); }
 
   template <typename TA, typename T, size_t S>
-  auto operator>= (TA a, const SIMD<T,S> & b)
+  inline auto operator>= (TA a, const SIMD<T,S> & b)
   { return SIMD<T,S>(a) >= b; }
   
 }

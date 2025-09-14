@@ -92,7 +92,7 @@ namespace ASC_HPC
   inline SIMD<double,2> HSum (SIMD<double,2> a, SIMD<double,2> b)
   { return vpaddq_f64(a.Val(), b.Val()); }
   
-  auto operator>= (SIMD<double,2> a, SIMD<double,2> b)
+  inline auto operator>= (SIMD<double,2> a, SIMD<double,2> b)
   { return SIMD<mask64,2>(vcgeq_f64(a.Val(),b.Val())); }
 
 }
