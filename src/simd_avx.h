@@ -20,9 +20,10 @@ namespace ASC_HPC
     SIMD (__m128i _mask) : mask(_mask) { };
     SIMD (__m128d _mask) : mask(_mm_castpd_si128(_mask)) { ; }
     auto Val() const { return mask; }
-    mask64 operator[](size_t i) const { return ( (int32_t*)&mask)[i] != 0; }
+    // Each mask lane is 64 bits wide.
+    mask64 operator[](size_t i) const { return ( (int64_t*)&mask)[i] != 0; }
 
-    SIMD<mask64, 1> Lo() const { return SIMD<mask64,1>((*this)[1]); }
+    SIMD<mask64, 1> Lo() const { return SIMD<mask64,1>((*this)[0]); }
     SIMD<mask64, 1> Hi() const { return SIMD<mask64,1>((*this)[1]); }
   };
 
@@ -36,8 +37,9 @@ namespace ASC_HPC
     auto Val() const { return mask; }
     mask64 operator[](size_t i) const { return ( (int64_t*)&mask)[i] != 0; }
 
-    SIMD<mask64, 2> Lo() const { return _mm256_extracti128_si256(mask, 0); }
-    SIMD<mask64, 2> Hi() const { return _mm256_extracti128_si256(mask, 1); }
+    // AVX (not AVX2) instructions, so this also builds with -mavx alone.
+    SIMD<mask64, 2> Lo() const { return _mm256_castsi256_si128(mask); }
+    SIMD<mask64, 2> Hi() const { return _mm256_extractf128_si256(mask, 1); }
   };
 
     
@@ -64,7 +66,7 @@ namespace ASC_HPC
     void Store (double * p) const { _mm_storeu_pd(p, val); }
     void Store (double * p, SIMD<mask64,2> mask) const { _mm_maskstore_pd(p, mask.Val(), val); }
 
-    SIMD<double, 1> Lo() const { return SIMD<double,1>((*this)[1]); }
+    SIMD<double, 1> Lo() const { return SIMD<double,1>((*this)[0]); }
     SIMD<double, 1> Hi() const { return SIMD<double,1>((*this)[1]); }
   };
  
@@ -164,7 +166,7 @@ namespace ASC_HPC
   inline auto operator* (double a, SIMD<double,4> b) { return SIMD<double,4>(a)*b; }
 
   inline auto operator/ (SIMD<double,4> a, SIMD<double,4> b) { return SIMD<double,4> (_mm256_div_pd(a.Val(), b.Val())); }
-  inline auto operator/ (double a, SIMD<double,4> b) { return SIMD<double,4>(a)*b; }
+  inline auto operator/ (double a, SIMD<double,4> b) { return SIMD<double,4>(a)/b; }
 
 
   inline auto operator+ (SIMD<double,2> a, SIMD<double,2> b) { return SIMD<double,2> (_mm_add_pd(a.Val(), b.Val())); }
@@ -174,16 +176,20 @@ namespace ASC_HPC
   inline auto operator* (double a, SIMD<double,2> b) { return SIMD<double,2>(a)*b; }
 
   inline auto operator/ (SIMD<double,2> a, SIMD<double,2> b) { return SIMD<double,2> (_mm_div_pd(a.Val(), b.Val())); }
-  inline auto operator/ (double a, SIMD<double,2> b) { return SIMD<double,2>(a)*b; }
+  inline auto operator/ (double a, SIMD<double,2> b) { return SIMD<double,2>(a)/b; }
   
 #ifdef __FMA__
   inline SIMD<double,4> FMA (SIMD<double,4> a, SIMD<double,4> b, SIMD<double,4> c)
   { return _mm256_fmadd_pd (a.Val(), b.Val(), c.Val()); }
+  inline SIMD<double,2> FMA (SIMD<double,2> a, SIMD<double,2> b, SIMD<double,2> c)
+  { return _mm_fmadd_pd (a.Val(), b.Val(), c.Val()); }
 #endif
 
+#ifdef __AVX2__
   inline SIMD<mask64,4> operator>= (SIMD<int64_t,4> a , SIMD<int64_t,4> b)
   { // there is no a>=b, so we return !(b>a)
     return  _mm256_xor_si256(_mm256_cmpgt_epi64(b.Val(),a.Val()),_mm256_set1_epi32(-1)); }
+#endif
   
   inline auto operator>= (SIMD<double,4> a, SIMD<double,4> b)
   { return SIMD<mask64,4>(_mm256_cmp_pd (a.Val(), b.Val(), _CMP_GE_OQ)); }

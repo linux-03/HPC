@@ -5,6 +5,8 @@
 #include<string>
 #include<memory>
 #include <array>
+#include <cstdint>
+#include <utility>
 
 
 namespace ASC_HPC
@@ -165,6 +167,21 @@ namespace ASC_HPC
   template <typename T>
   auto operator+ (SIMD<T,1> a, SIMD<T,1> b) { return SIMD<T,1> (a.Val()+b.Val()); }
 
+
+  template <typename T, size_t S>
+  auto operator- (SIMD<T,S> a, SIMD<T,S> b) { return SIMD<T,S> (a.Lo()-b.Lo(), a.Hi()-b.Hi()); }
+  template <typename T>
+  auto operator- (SIMD<T,1> a, SIMD<T,1> b) { return SIMD<T,1> (a.Val()-b.Val()); }
+
+  template <typename T, size_t S>
+  auto operator/ (SIMD<T,S> a, SIMD<T,S> b) { return SIMD<T,S> (a.Lo()/b.Lo(), a.Hi()/b.Hi()); }
+  template <typename T>
+  auto operator/ (SIMD<T,1> a, SIMD<T,1> b) { return SIMD<T,1> (a.Val()/b.Val()); }
+
+  template <typename T, size_t S>
+  auto operator/ (double a, SIMD<T,S> b) { return SIMD<T,S> (a/b.Lo(), a/b.Hi()); }
+  template <typename T>
+  auto operator/ (double a, SIMD<T,1> b) { return SIMD<T,1> (a/b.Val()); }
 
   template <typename T, size_t S>
   auto operator* (SIMD<T,S> a, SIMD<T,S> b) { return SIMD<T,S> (a.Lo()*b.Lo(), a.Hi()*b.Hi()); }

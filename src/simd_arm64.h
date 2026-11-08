@@ -80,7 +80,9 @@ namespace ASC_HPC
   inline auto operator- (SIMD<double,2> a, SIMD<double,2> b) { return SIMD<double,2> (a.Val()-b.Val()); }
   
   inline auto operator* (SIMD<double,2> a, SIMD<double,2> b) { return SIMD<double,2> (a.Val()*b.Val()); }
-  inline auto operator* (double a, SIMD<double,2> b) { return SIMD<double,2> (a*b.Val()); }    
+  inline auto operator* (double a, SIMD<double,2> b) { return SIMD<double,2> (a*b.Val()); }
+  inline auto operator/ (SIMD<double,2> a, SIMD<double,2> b) { return SIMD<double,2> (a.Val()/b.Val()); }
+  inline auto operator/ (double a, SIMD<double,2> b) { return SIMD<double,2> (SIMD<double,2>(a).Val()/b.Val()); }
   
   // a*b+c
   inline SIMD<double,2> FMA (SIMD<double,2> a, SIMD<double,2> b, SIMD<double,2> c) 
